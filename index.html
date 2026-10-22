@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Claude vs GPT — 8-bit Invaders</title>
+<title>AI Invaders</title>
 <style>
 :root{--bg:#0b0b12;--fg:#f4ece6;--c:#d97757;--btn:#1b1b28;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:"Courier New",monospace}
@@ -32,6 +32,7 @@ canvas{background:#000;border:3px solid var(--c);image-rendering:pixelated;width
 <div class="hd"><h1>CLAUDE vs GPT</h1><button id="ib" aria-label="Інформація">i</button></div>
 <canvas id="c" width="400" height="500"></canvas>
 <div class="pad"><button id="bl">◀</button><button id="bf">FIRE</button><button id="br">▶</button></div>
+<div class="hint"></div>
 <div id="info" class="ov" hidden><div class="box"><h2>Інформація</h2><p>← → або A D — рух<br>Пробіл — вогонь<br>На телефоні — кнопки ◀ FIRE ▶</p><p>Знищ усі хвилі GPT і боса GPT-∞, щоб Claude переміг.</p><p><a href="https://github.com/whyuxavier/ai-invaders" target="_blank" rel="noopener">GitHub: whyuxavier/ai-invaders</a></p><button id="ix">Закрити</button></div></div>
 <div id="lb" class="ov" hidden><div class="box"><h2></h2><div class="sc"></div><div class="save" hidden><input id="nm" maxlength="12" placeholder="Твоє ім’я" autocomplete="off"> <button id="sv">Зберегти</button></div><h3>🏆 Список лідерів</h3><ol></ol><button id="again">Грати ще</button></div></div>
 <script>
@@ -183,7 +184,7 @@ async function save(){
  const e={n:(ni.value.trim()||'Гравець').slice(0,12),s:g.score,w:g.st==='win'?1:0};$('.save').hidden=true;
  try{localStorage.setItem('cvg_name',e.n)}catch(_){}
  if(online){try{
-  await fetch(DB+'.json',{method:'POST',body:JSON.stringify(e)});
+  const r=await fetch(DB+'.json',{method:'POST',body:JSON.stringify(e)});if(!r.ok)throw 0;
   await loadBoard();if(!online)throw 0;
   await Promise.all(board.slice(10).map(x=>fetch(DB+'/'+x.k+'.json',{method:'DELETE'})));
   board=board.slice(0,10);draw(board,board.find(x=>x.n===e.n&&x.s===e.s));return;
