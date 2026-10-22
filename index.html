@@ -4,7 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Claude vs GPT — 8-bit Invaders</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -3 16 16'%3E%3Cpath fill='%23d97757' d='M2 0h12v8H2zM0 4h16v2H0zM3 8h1v2H3zM5 8h1v2H5zM10 8h1v2h-1zM12 8h1v2h-1z'/%3E%3Cpath fill='%23000' d='M4 2h1v2H4zM11 2h1v2h-1z'/%3E%3C/svg%3E">
 <style>
 :root{--bg:#0b0b12;--fg:#f4ece6;--c:#d97757;--btn:#1b1b28;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:"Courier New",monospace}
@@ -158,21 +157,39 @@ const lb=document.getElementById('lb'),info=document.getElementById('info'),ni=d
 const $=s=>lb.querySelector(s);
 function getLB(){try{return JSON.parse(localStorage.getItem('cvg_lb'))||[]}catch(_){return[]}}
 function putLB(a){try{localStorage.setItem('cvg_lb',JSON.stringify(a))}catch(_){}}
+const DB='https://whyuxavier-default-rtdb.europe-west1.firebasedatabase.app/leaderboard';
+let board=[],online=false;
+async function loadBoard(){
+ try{const r=await fetch(DB+'.json');if(!r.ok)throw 0;const o=await r.json()||{};
+  board=Object.entries(o).map(([k,v])=>({k,n:String(v.n),s:+v.s,w:+v.w||0})).sort((a,b)=>b.s-a.s);online=true}
+ catch(_){board=getLB();online=false}
+}
 function draw(a,me){const o=$('ol');o.textContent='';if(!a.length){o.textContent='Поки порожньо';return}
  a.forEach((e,i)=>{const li=document.createElement('li');if(e===me)li.className='me';const l=document.createElement('span'),r=document.createElement('span');l.textContent=(i+1)+'. '+(e.w?'👑 ':'')+e.n;r.textContent=e.s;li.append(l,r);o.append(li)})}
-function showLB(win){
+async function showLB(win){
  if(g.st==='play')return;
- const a=getLB(),q=g.score>0&&(a.length<10||g.score>a[a.length-1].s);
+ 
  $('h2').textContent=win?'🎉 Claude переміг!':'GAME OVER';
  $('.sc').textContent='Очки: '+g.score;
  try{ni.value=localStorage.getItem('cvg_name')||''}catch(_){}
- $('.save').hidden=!q;draw(a);lb.hidden=false;
+ $('.save').hidden=true;$('ol').textContent='Завантаження…';lb.hidden=false;
+ await loadBoard();
+ if(g.st==='play')return;
+ const t=board.slice(0,10),q=g.score>0&&(t.length<10||g.score>t[t.length-1].s);
+ $('h3').textContent=online?'🏆 Список лідерів':'🏆 Мої рекорди (офлайн)';
+ $('.save').hidden=!q;draw(t);
 }
-function save(){
- const a=getLB(),e={n:(ni.value.trim()||'Гравець').slice(0,12),s:g.score,w:g.st==='win'?1:0};
+async function save(){
+ const e={n:(ni.value.trim()||'Гравець').slice(0,12),s:g.score,w:g.st==='win'?1:0};$('.save').hidden=true;
  try{localStorage.setItem('cvg_name',e.n)}catch(_){}
- a.push(e);a.sort((p,q)=>q.s-p.s);a.length=Math.min(a.length,10);putLB(a);
- $('.save').hidden=true;draw(a,e);
+ if(online){try{
+  await fetch(DB+'.json',{method:'POST',body:JSON.stringify(e)});
+  await loadBoard();if(!online)throw 0;
+  await Promise.all(board.slice(10).map(x=>fetch(DB+'/'+x.k+'.json',{method:'DELETE'})));
+  board=board.slice(0,10);draw(board,board.find(x=>x.n===e.n&&x.s===e.s));return;
+ }catch(_){}}
+ const a=getLB();a.push(e);a.sort((p,q)=>q.s-p.s);a.length=Math.min(a.length,10);putLB(a);
+ draw(a,e);
 }
 $('#sv').onclick=save;
 ni.onkeydown=e=>{if(e.key==='Enter')save()};
