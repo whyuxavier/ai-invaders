@@ -10,7 +10,7 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:
 body{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;overflow:hidden}
 h1{margin:0;font-size:14px;letter-spacing:2px;color:var(--c)}
 .hd{display:flex;align-items:center;gap:12px}
-#ib{font:inherit;font-weight:bold;width:26px;height:26px;padding:0;background:var(--btn);color:var(--fg);border:2px solid var(--c);border-radius:6px;cursor:pointer}
+#ib,#pb{font:inherit;font-weight:bold;width:26px;height:26px;padding:0;background:var(--btn);color:var(--fg);border:2px solid var(--c);border-radius:6px;cursor:pointer}
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.84);display:flex;align-items:center;justify-content:center;z-index:5;padding:16px;box-sizing:border-box}
 .ov[hidden]{display:none}
 .box{background:#14141f;border:3px solid var(--c);border-radius:10px;padding:18px 22px;max-width:340px;width:100%;text-align:center;font-size:14px;line-height:1.5;max-height:100%;overflow-y:auto;box-sizing:border-box}
@@ -22,6 +22,7 @@ h1{margin:0;font-size:14px;letter-spacing:2px;color:var(--c)}
 .box ol{list-style:none;padding:0;margin:8px 0;text-align:left}
 .box li{display:flex;justify-content:space-between;padding:2px 8px}
 .box li.me{background:#d9775533}
+.err{min-height:1.4em;margin:6px 0 0;color:#ff879b;font-size:12px}
 canvas{background:#000;border:3px solid var(--c);image-rendering:pixelated;width:min(94vw,calc((100vh - 170px)*.8),400px);aspect-ratio:4/5;touch-action:none}
 .pad{display:flex;gap:12px}
 .pad button{font:inherit;font-size:22px;padding:12px 24px;background:var(--btn);color:var(--fg);border:2px solid var(--c);border-radius:8px;touch-action:none;user-select:none}
@@ -29,12 +30,13 @@ canvas{background:#000;border:3px solid var(--c);image-rendering:pixelated;width
 </style>
 </head>
 <body>
-<div class="hd"><h1>CLAUDE vs GPT</h1><button id="ib" aria-label="Інформація">i</button></div>
+<div class="hd"><h1>CLAUDE vs GPT</h1><button id="pb" aria-label="&#1055;&#1072;&#1091;&#1079;&#1072;" title="&#1055;&#1072;&#1091;&#1079;&#1072;">Ⅱ</button><button id="ib" aria-label="Інформація">i</button></div>
 <canvas id="c" width="400" height="500"></canvas>
 <div class="pad"><button id="bl">◀</button><button id="bf">FIRE</button><button id="br">▶</button></div>
 <div class="hint"></div>
 <div id="info" class="ov" hidden><div class="box"><h2>Інформація</h2><p>← → або A D — рух<br>Пробіл — вогонь<br>На телефоні — кнопки ◀ FIRE ▶</p><p>Знищ усі хвилі GPT і боса GPT-∞, щоб Claude переміг.</p><p><a href="https://github.com/whyuxavier/ai-invaders" target="_blank" rel="noopener">GitHub: whyuxavier/ai-invaders</a></p><button id="ix">Закрити</button></div></div>
-<div id="lb" class="ov" hidden><div class="box"><h2></h2><div class="sc"></div><div class="save" hidden><input id="nm" maxlength="12" placeholder="Твоє ім’я" autocomplete="off"> <button id="sv">Зберегти</button></div><h3>🏆 Список лідерів</h3><ol></ol><button id="again">Грати ще</button></div></div>
+<div id="lb" class="ov" hidden><div class="box"><h2></h2><div class="sc"></div><div class="save" hidden><input id="nm" maxlength="12" placeholder="&#1058;&#1074;&#1086;&#1108; &#1110;&#1084;’&#1103;" autocomplete="off"> <button id="sv">&#1047;&#1073;&#1077;&#1088;&#1077;&#1075;&#1090;&#1080;</button><p id="nickError" class="err" aria-live="polite"></p></div><h3>🏆 &#1057;&#1087;&#1080;&#1089;&#1086;&#1082; &#1083;&#1110;&#1076;&#1077;&#1088;&#1110;&#1074;</h3><ol></ol><button id="again">&#1043;&#1088;&#1072;&#1090;&#1080; &#1097;&#1077;</button></div></div>
+<div id="pause" class="ov" hidden><div class="box"><h2>⏸ &#1055;&#1072;&#1091;&#1079;&#1072;</h2><p>&#1043;&#1088;&#1091; &#1087;&#1088;&#1080;&#1079;&#1091;&#1087;&#1080;&#1085;&#1077;&#1085;&#1086;. &#1052;&#1086;&#1078;&#1085;&#1072; &#1087;&#1077;&#1088;&#1077;&#1075;&#1083;&#1103;&#1085;&#1091;&#1090;&#1080; &#1088;&#1077;&#1079;&#1091;&#1083;&#1100;&#1090;&#1072;&#1090;&#1080; &#1081; &#1087;&#1086;&#1074;&#1077;&#1088;&#1085;&#1091;&#1090;&#1080;&#1089;&#1103; &#1087;&#1110;&#1079;&#1085;&#1110;&#1096;&#1077;.</p><h3>🏆 &#1057;&#1087;&#1080;&#1089;&#1086;&#1082; &#1083;&#1110;&#1076;&#1077;&#1088;&#1110;&#1074;</h3><ol></ol><button id="resume">&#1055;&#1088;&#1086;&#1076;&#1086;&#1074;&#1078;&#1080;&#1090;&#1080;</button> <button id="quit">&#1047;&#1072;&#1074;&#1077;&#1088;&#1096;&#1080;&#1090;&#1080; &#1075;&#1088;&#1091;</button></div></div>
 <script>
 const cv=document.getElementById('c'),x=cv.getContext('2d'),W=400,H=500;
 const SP={
@@ -137,6 +139,9 @@ function act(){if(g.st!=='play')start()}
 addEventListener('keydown',e=>{
  if(!info.hidden||!lb.hidden)return;
  const k=e.key.toLowerCase();
+ if((k==='p'||k==='escape')&&g.st==='play'){pauseGame();e.preventDefault();return}
+ if((k==='p'||k==='escape')&&g.st==='pause'){resumeGame();e.preventDefault();return}
+ if(g.st==='pause')return;
  if(k==='arrowleft'||k==='a')K.l=1;
  if(k==='arrowright'||k==='d')K.r=1;
  if(k===' '||k==='enter'){K.f=1;act();e.preventDefault()}
@@ -154,48 +159,25 @@ function bind(id,key,start){
 }
 bind('bl','l');bind('br','r');bind('bf','f',true);
 
-const lb=document.getElementById('lb'),info=document.getElementById('info'),ni=document.getElementById('nm');
+const lb=document.getElementById('lb'),pause=document.getElementById('pause'),info=document.getElementById('info'),ni=document.getElementById('nm');
 const $=s=>lb.querySelector(s);
 function getLB(){try{return JSON.parse(localStorage.getItem('cvg_lb'))||[]}catch(_){return[]}}
 function putLB(a){try{localStorage.setItem('cvg_lb',JSON.stringify(a))}catch(_){}}
 const DB='https://whyuxavier-default-rtdb.europe-west1.firebasedatabase.app/leaderboard';
-let board=[],online=false;
-async function loadBoard(){
- try{const r=await fetch(DB+'.json');if(!r.ok)throw 0;const o=await r.json()||{};
-  board=Object.entries(o).map(([k,v])=>({k,n:String(v.n),s:+v.s,w:+v.w||0})).sort((a,b)=>b.s-a.s);online=true}
- catch(_){board=getLB();online=false}
-}
-function draw(a,me){const o=$('ol');o.textContent='';if(!a.length){o.textContent='Поки порожньо';return}
- a.forEach((e,i)=>{const li=document.createElement('li');if(e===me)li.className='me';const l=document.createElement('span'),r=document.createElement('span');l.textContent=(i+1)+'. '+(e.w?'👑 ':'')+e.n;r.textContent=e.s;li.append(l,r);o.append(li)})}
-async function showLB(win){
- if(g.st==='play')return;
- 
- $('h2').textContent=win?'🎉 Claude переміг!':'GAME OVER';
- $('.sc').textContent='Очки: '+g.score;
- try{ni.value=localStorage.getItem('cvg_name')||''}catch(_){}
- $('.save').hidden=true;$('ol').textContent='Завантаження…';lb.hidden=false;
- await loadBoard();
- if(g.st==='play')return;
- const t=board.slice(0,10),q=g.score>0&&(t.length<10||g.score>t[t.length-1].s);
- $('h3').textContent=online?'🏆 Список лідерів':'🏆 Мої рекорди (офлайн)';
- $('.save').hidden=!q;draw(t);
-}
-async function save(){
- const e={n:(ni.value.trim()||'Гравець').slice(0,12),s:g.score,w:g.st==='win'?1:0};$('.save').hidden=true;
- try{localStorage.setItem('cvg_name',e.n)}catch(_){}
- if(online){try{
-  const r=await fetch(DB+'.json',{method:'POST',body:JSON.stringify(e)});if(!r.ok)throw 0;
-  await loadBoard();if(!online)throw 0;
-  await Promise.all(board.slice(10).map(x=>fetch(DB+'/'+x.k+'.json',{method:'DELETE'})));
-  board=board.slice(0,10);draw(board,board.find(x=>x.n===e.n&&x.s===e.s));return;
- }catch(_){}}
- const a=getLB();a.push(e);a.sort((p,q)=>q.s-p.s);a.length=Math.min(a.length,10);putLB(a);
- draw(a,e);
-}
-$('#sv').onclick=save;
-ni.onkeydown=e=>{if(e.key==='Enter')save()};
-$('#again').onclick=e=>{e.currentTarget.blur();lb.hidden=true;start()};
-document.getElementById('ib').onclick=e=>{e.currentTarget.blur();K.l=K.r=K.f=0;info.hidden=false};
+let board=[],rawBoard=[],online=false;
+const BANNED_NICKNAMES=['1488','admin','administrator','moderator','support','fuck','shit','pidor','pidaras','pidoras','suka','сука','хуй','пизд','бля'];
+function normalName(name){return name.trim().replace(/\s+/g,' ').toLocaleLowerCase('uk-UA')}
+function nameKey(name){return 'n_'+btoa(unescape(encodeURIComponent(normalName(name)))).replace(/=/g,'')}
+function isBanned(name){const clean=normalName(name);return BANNED_NICKNAMES.some(word=>clean.includes(word))}
+function uniqueBoard(entries){const names=new Map();entries.forEach(e=>{const key=normalName(String(e.n||'')),old=names.get(key);if(key&&(!old||+e.s>+old.s))names.set(key,e)});return [...names.values()].sort((a,b)=>b.s-a.s)}
+async function loadBoard(){try{const r=await fetch(DB+'.json');if(!r.ok)throw 0;const o=await r.json()||{};rawBoard=Object.entries(o).map(([k,v])=>({k,n:String(v.n),s:+v.s,w:+v.w||0}));board=uniqueBoard(rawBoard);online=true}catch(_){rawBoard=getLB();board=uniqueBoard(rawBoard);online=false}}
+function draw(a,me,target=lb){const o=target.querySelector('ol');o.textContent='';if(!a.length){o.textContent='Поки порожньо';return}a.forEach((e,i)=>{const li=document.createElement('li');if(e===me)li.className='me';const l=document.createElement('span'),r=document.createElement('span');l.textContent=(i+1)+'. '+(e.w?'👑 ':'')+e.n;r.textContent=e.s;li.append(l,r);o.append(li)})}
+async function showLB(win){if(g.st==='play')return;$('h2').textContent=win?'🎉 Claude переміг!':'GAME OVER';$('.sc').textContent='Очки: '+g.score;try{ni.value=localStorage.getItem('cvg_name')||''}catch(_){}document.getElementById('nickError').textContent='';$('.save').hidden=true;$('ol').textContent='Завантаження…';lb.hidden=false;await loadBoard();if(g.st==='play')return;$('h3').textContent=online?'🏆 Список лідерів':'🏆 Мої рекорди (офлайн)';$('.save').hidden=g.score<=0;draw(board.slice(0,10))}
+async function save(){const nickname=(ni.value.trim()||'Гравець').slice(0,12),error=document.getElementById('nickError');error.textContent='';if(isBanned(nickname)){error.textContent='Цей нікнейм не можна використовувати.';return}const e={n:nickname,s:g.score,w:g.st==='win'?1:0},same=board.find(x=>normalName(x.n)===normalName(e.n));try{localStorage.setItem('cvg_name',e.n)}catch(_){}if(same&&same.s>=e.s){error.textContent='Для цього імені вже збережено кращий або такий самий результат.';draw(board.slice(0,10),same);return}$('.save').hidden=true;if(online){try{const r=await fetch(DB+'/'+nameKey(e.n)+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(e)});if(!r.ok)throw 0;await loadBoard();if(!online)throw 0;const duplicates=rawBoard.filter(x=>normalName(x.n)===normalName(e.n)&&x.k!==nameKey(e.n));await Promise.all(duplicates.map(x=>fetch(DB+'/'+x.k+'.json',{method:'DELETE'})));await loadBoard();draw(board.slice(0,10),board.find(x=>normalName(x.n)===normalName(e.n)));return}catch(_){}}const a=uniqueBoard([...getLB(),e]);putLB(a);board=a;draw(a.slice(0,10),a.find(x=>normalName(x.n)===normalName(e.n)))}
+async function pauseGame(){if(g.st!=='play')return;K.l=K.r=K.f=0;g.st='pause';pause.hidden=false;pause.querySelector('ol').textContent='Завантаження…';await loadBoard();if(g.st==='pause')draw(board.slice(0,10),null,pause)}
+function resumeGame(){if(g.st==='pause'){pause.hidden=true;g.st='play'}}
+function quitGame(){K.l=K.r=K.f=0;pause.hidden=true;g={st:'menu'}}
+$('#sv').onclick=save;ni.onkeydown=e=>{if(e.key==='Enter')save()};$('#again').onclick=e=>{e.currentTarget.blur();lb.hidden=true;start()};document.getElementById('pb').onclick=e=>{e.currentTarget.blur();pauseGame()};document.getElementById('resume').onclick=resumeGame;document.getElementById('quit').onclick=quitGame;pause.onclick=e=>{if(e.target===pause)resumeGame()};document.getElementById('ib').onclick=e=>{e.currentTarget.blur();K.l=K.r=K.f=0;info.hidden=false};
 document.getElementById('ix').onclick=e=>{e.currentTarget.blur();info.hidden=true};
 info.onclick=e=>{if(e.target===info)info.hidden=true};
 cv.addEventListener('pointerdown',act);
