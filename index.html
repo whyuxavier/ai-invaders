@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>AI Invaders</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b0b12">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="AI Invaders">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><text y=%2250%22 font-size=%2252%22>👾</text></svg>">
 <style>
 :root{--bg:#0b0b12;--fg:#f4ece6;--c:#d97757;--btn:#1b1b28;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -50,7 +57,7 @@ canvas{background:#000;border:3px solid var(--c);image-rendering:pixelated;width
 <div class="tabs"><button data-t="game" class="on">Гра</button><button data-t="top">Топ-10</button><button data-t="about">Про гру</button></div>
 <section data-p="game"><p>Колір персонажа</p><canvas id="pv" width="64" height="40" style="width:64px;height:40px;border:0"></canvas><div id="sw"></div><div class="row"><button id="resume" class="pri">▶ Продовжити</button><button id="quit">Завершити гру</button></div></section>
 <section data-p="top" hidden><ol></ol></section>
-<section data-p="about" hidden><p>← → або A D — рух<br>Пробіл — вогонь<br>P / Esc — меню<br>На телефоні — кнопки ◀ FIRE ▶</p><p>Знищ усі хвилі GPT, боса GPT-∞ і пройди супер-рівень проти GPT та Gemini, щоб Claude переміг.</p><a class="btn" href="https://github.com/whyuxavier/ai-invaders" target="_blank" rel="noopener"><svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a></section>
+<section data-p="about" hidden><p>← → або A D — рух<br>Пробіл — вогонь<br>P / Esc — меню<br>На телефоні — кнопки ◀ FIRE ▶</p><p>Знищ усі хвилі GPT, боса GPT-∞ і пройди супер-рівень проти GPT та Gemini, щоб Claude переміг.</p><a class="btn" href="https://github.com/whyuxavier/ai-invaders" target="_blank" rel="noopener"><svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a> <button id="inst" hidden>⬇ Встановити</button><p id="ios" hidden style="font-size:12px;opacity:.8">iPhone: «Поділитися» → «На початковий екран»</p></section>
 </div></div>
 <script>
 const cv=document.getElementById('c'),x=cv.getContext('2d'),W=400,H=500;
@@ -241,6 +248,12 @@ $('#sv').onclick=save;ni.onkeydown=e=>{if(e.key==='Enter')save()};$('#again').on
 
 
 cv.addEventListener('pointerdown',act);
+let dip=null;const inst=document.getElementById('inst'),standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e;inst.hidden=false});
+inst.onclick=async()=>{if(!dip)return;dip.prompt();await dip.userChoice;dip=null;inst.hidden=true};
+addEventListener('appinstalled',()=>{inst.hidden=true});
+if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!standalone)document.getElementById('ios').hidden=false;
+if('serviceWorker' in navigator&&location.protocol!=='file:')addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
 </body>
 </html>
